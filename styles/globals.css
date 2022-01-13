@@ -14,3 +14,15 @@ a {
 * {
   box-sizing: border-box;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button {
+  @apply border border-gray-300 mx-1 px-2 py-1 rounded-md hover:bg-slate-100;
+}
+
+img {
+  @apply h-full;
+}

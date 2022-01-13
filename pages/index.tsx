@@ -1,7 +1,7 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import type { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
   return (
@@ -14,41 +14,39 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Experiments with{" "}
+          <a href="https://xstate.js.org/docs/about/concepts.html">XState!</a>
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
+        <div className="max-w-xl">
+          <p className={styles.description}>
+            <code className={styles.code}>
+              A finite state machine is a mathematical model of computation that
+              describes the behavior of a system that can be in only one state
+              at any given time.
+            </code>
+          </p>
+        </div>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
+        <div className="grid grid-cols-2">
+          <a href="/xstate" className={styles.card}>
+            <h2>XState &rarr;</h2>
+            <p>Promise Resolve/Reject helloworld</p>
           </a>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
+          <a href="/dog" className={styles.card}>
+            <h2>An Obedient Dog &rarr;</h2>
+            <p>Tell the dog what to do!</p>
           </a>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
+          <a href="/undoredo" className={styles.card}>
+            <h2>RedoRedoRedo &rarr;</h2>
+            <p>trying out undo and redo handling in an xstate project</p>
           </a>
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
+          <a href="#" className={styles.card}>
+            <h2>Soon! &rarr;</h2>
+            <p>some other cool tutorial about xstate</p>
           </a>
         </div>
       </main>
@@ -59,14 +57,14 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
