@@ -177,9 +177,17 @@ const UndoRedo = () => {
       <br />
       <br />
       <br />
-      <br />
-      <br />
       {JSON.stringify(state.toJSON())}
+      <br />
+      <br />
+      <div className="h-screen">
+        <iframe
+          className="h-2/3 w-full"
+          src="https://stately.ai/viz/embed/8a3ea267-f6da-4d3b-9ff5-e2c941d79bb1?mode=viz&panel=code&readOnly=1&showOriginalLink=1&controls=0&pan=0&zoom=0"
+          allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+          sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+        ></iframe>
+      </div>
     </div>
   );
 };
