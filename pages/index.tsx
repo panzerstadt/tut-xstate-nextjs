@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   return (
@@ -29,25 +30,33 @@ const Home: NextPage = () => {
         </div>
 
         <div className="grid grid-cols-2">
-          <a href="/xstate" className={styles.card}>
-            <h2>XState &rarr;</h2>
-            <p>Promise Resolve/Reject helloworld</p>
-          </a>
+          <Link href="/xstate">
+            <a className={styles.card}>
+              <h2>XState &rarr;</h2>
+              <p>Promise Resolve/Reject helloworld</p>
+            </a>
+          </Link>
 
-          <a href="/dog" className={styles.card}>
-            <h2>An Obedient Dog &rarr;</h2>
-            <p>Tell the dog what to do!</p>
-          </a>
+          <Link href="/dog">
+            <a className={styles.card}>
+              <h2>An Obedient Dog &rarr;</h2>
+              <p>Tell the dog what to do!</p>
+            </a>
+          </Link>
 
-          <a href="/undoredo" className={styles.card}>
-            <h2>RedoRedoRedo &rarr;</h2>
-            <p>trying out undo and redo handling in an xstate project</p>
-          </a>
+          <Link href="/undoredo">
+            <a className={styles.card}>
+              <h2>RedoRedoRedo &rarr;</h2>
+              <p>trying out undo and redo handling in an xstate project</p>
+            </a>
+          </Link>
 
-          <a href="#" className={styles.card}>
-            <h2>Soon! &rarr;</h2>
-            <p>some other cool tutorial about xstate</p>
-          </a>
+          <Link href="#">
+            <a className={styles.card}>
+              <h2>Soon! &rarr;</h2>
+              <p>some other cool tutorial about xstate</p>
+            </a>
+          </Link>
         </div>
       </main>
 
