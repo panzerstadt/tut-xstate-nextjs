@@ -51,10 +51,10 @@ const Home: NextPage = () => {
             </a>
           </Link>
 
-          <Link href="#">
+          <Link href="/reddit">
             <a className={styles.card}>
-              <h2>Soon! &rarr;</h2>
-              <p>some other cool tutorial about xstate</p>
+              <h2>Reddit! &rarr;</h2>
+              <p>the redux tutorial, but in xstate</p>
             </a>
           </Link>
         </div>
