@@ -1,11 +1,25 @@
 import { useMachine } from "@xstate/react";
 import React, { useEffect, useRef } from "react";
-import { assign, createMachine, EventObject } from "xstate";
+import { assign, createMachine, EventObject, spawn } from "xstate";
 import { EventType } from "../components/subreddit.types";
-import { Subreddit } from "../components/subreddit";
+import { createSubredditMachine, Subreddit } from "../components/subreddit";
+
+const SUBREDDITS = [
+  "mechanicalkeyboards",
+  "unrealengine",
+  "3Dprinting",
+  "frontend",
+  "reactjs",
+  "vuejs",
+  "eli5_programming",
+  "XState",
+  "statemachines",
+];
 
 interface Context {
-  subreddit: string | null;
+  subreddits: { [key in string]: any };
+  subreddit: any | null;
+  subredditName: string | null;
 }
 
 interface Event extends EventObject {
@@ -16,7 +30,9 @@ export const redditMachine = createMachine<Context, Event>({
   id: "reddit",
   initial: "idle",
   context: {
+    subreddits: {}, // mapping (cache)
     subreddit: null,
+    subredditName: null,
   },
   states: {
     idle: {},
@@ -26,41 +42,57 @@ export const redditMachine = createMachine<Context, Event>({
     // top level transition event (global?)
     [EventType.SELECT]: {
       target: ".selected", // relative gosh
-      actions: assign({
-        subreddit: (context, event: Event) => event.name,
+      actions: assign((context, event) => {
+        // if exists, use existing actor
+        let subreddit = context.subreddits[event.name];
+
+        if (subreddit) {
+          return {
+            ...context,
+            subreddit,
+            subredditName: event.name,
+          };
+        }
+
+        // else spawn a new subreddit
+        subreddit = spawn(createSubredditMachine(event.name));
+
+        return {
+          subreddits: {
+            ...context.subreddits,
+            [event.name]: subreddit,
+          },
+          subreddit,
+          subredditName: event.name,
+        };
       }),
     },
   },
 });
 
 const Reddit = () => {
-  const subreddits = [
-    "mechanicalkeyboards",
-    "frontend",
-    "reactjs",
-    "vuejs",
-    "eli5_programming",
-    "XState",
-  ];
   const [state, send] = useMachine(redditMachine);
   const { subreddit } = state.context as Context;
 
-  const subredditRef = useRef(state.context.subreddit);
+  const subredditRef = useRef(state.context.subredditName);
   useEffect(() => {
-    subredditRef.current = state.context.subreddit;
+    subredditRef.current = state.context.subredditName;
   }, [state]);
 
   const handleTab = (e: KeyboardEvent) => {
     const currentSubreddit = subredditRef.current;
     if (e.code === "Comma") {
-      const prevIndex = subreddits.findIndex((v) => v === currentSubreddit) - 1;
+      const prevIndex = SUBREDDITS.findIndex((v) => v === currentSubreddit) - 1;
       const prevSubreddit =
-        subreddits[prevIndex] || subreddits[subreddits.length - 1];
+        SUBREDDITS[prevIndex] || SUBREDDITS[SUBREDDITS.length - 1];
+      console.log("selecting", prevSubreddit);
       return send("SELECT", { name: prevSubreddit });
     }
     if (e.code === "Period") {
-      const nextIndex = subreddits.findIndex((v) => v === currentSubreddit) + 1;
-      const nextSubreddit = subreddits[nextIndex] || subreddits[0];
+      const nextIndex = SUBREDDITS.findIndex((v) => v === currentSubreddit) + 1;
+      const nextSubreddit = SUBREDDITS[nextIndex] || SUBREDDITS[0];
+      console.log("selecting", nextSubreddit);
+
       return send("SELECT", { name: nextSubreddit });
     }
   };
@@ -81,7 +113,7 @@ const Reddit = () => {
           }}
         >
           <option value="">--Select a subreddit--</option>
-          {subreddits.map((subreddit) => {
+          {SUBREDDITS.map((subreddit) => {
             return (
               <option
                 key={subreddit}
@@ -115,7 +147,7 @@ const Reddit = () => {
         <div className="h-full w-full flex flex-col items-center justify-center text-stone-600">
           <p className="mb-4">Select a subreddit</p>
           <ul className="flex flex-col gap-1">
-            {subreddits.map((sr) => {
+            {SUBREDDITS.map((sr) => {
               return (
                 <button
                   className="px-3"
@@ -130,7 +162,7 @@ const Reddit = () => {
         </div>
       )}
 
-      {subreddit && <Subreddit name={subreddit} key={subreddit} />}
+      {subreddit && <Subreddit service={subreddit} key={subreddit} />}
     </main>
   );
 };

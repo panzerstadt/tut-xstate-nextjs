@@ -1,6 +1,6 @@
-import { useMachine } from "@xstate/react";
+import { useActor, useMachine, useService } from "@xstate/react";
 import { useMemo } from "react";
-import { assign, createMachine } from "xstate";
+import { ActorRef, ActorRefFrom, assign, createMachine } from "xstate";
 import { Context, Event } from "./subreddit.types";
 import Image from "next/image";
 
@@ -14,7 +14,7 @@ const invokeFetchSubreddit = (context: Context) => {
     );
 };
 
-const createSubredditMachine = (subreddit: string) => {
+export const createSubredditMachine = (subreddit: string) => {
   return createMachine<Context, Event>({
     id: "subreddit",
     initial: "loading",
@@ -53,16 +53,10 @@ const createSubredditMachine = (subreddit: string) => {
 };
 
 interface Props {
-  name: string;
+  service: ActorRef<any>; // the subreddit machine itself
 }
-export const Subreddit: React.FC<Props> = ({ name }) => {
-  //create machine based only on the subreddit name
-  const subredditMachine = useMemo(() => {
-    console.log("subreddit name?", name);
-    return createSubredditMachine(name);
-  }, [name]);
-
-  const [current, send] = useMachine(subredditMachine);
+export const Subreddit: React.FC<Props> = ({ service }) => {
+  const [current, send] = useActor(service);
 
   if (current.matches("failure")) {
     return (
