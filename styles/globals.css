@@ -20,7 +20,7 @@ a {
 @tailwind utilities;
 
 button {
-  @apply border border-gray-300 mx-1 px-2 py-1 rounded-md hover:bg-slate-100;
+  @apply border border-gray-300 px-2 py-1 rounded-md hover:bg-slate-100;
 }
 
 img {
