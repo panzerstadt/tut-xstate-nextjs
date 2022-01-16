@@ -1,29 +1,15 @@
 import { useMachine } from "@xstate/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { assign, createMachine, EventObject } from "xstate";
-import Image from "next/image";
-
-enum EventType {
-  SELECT = "SELECT",
-}
-
-const invokeFetchSubreddit = (context: Context) => {
-  const { subreddit } = context;
-
-  return fetch(`https://www.reddit.com/r/${subreddit}.json`)
-    .then((response) => response.json())
-    .then((json) =>
-      json.data.children.map((child: { data: unknown }) => child.data)
-    );
-};
+import { EventType } from "../components/subreddit.types";
+import { Subreddit } from "../components/subreddit";
 
 interface Context {
-  subreddit: string | null | undefined;
-  posts: any; // TODO:
+  subreddit: string | null;
 }
 
 interface Event extends EventObject {
-  name?: string;
+  name: string;
 }
 
 export const redditMachine = createMachine<Context, Event>({
@@ -31,31 +17,10 @@ export const redditMachine = createMachine<Context, Event>({
   initial: "idle",
   context: {
     subreddit: null,
-    posts: null,
   },
   states: {
     idle: {},
-    selected: {
-      // when selected, start loading data
-      initial: "loading",
-      states: {
-        loading: {
-          invoke: {
-            id: "fetch-subreddit",
-            src: invokeFetchSubreddit,
-            onDone: {
-              target: "loaded",
-              actions: assign({
-                posts: (context, event) => event.data,
-              }),
-            },
-            onError: "failed",
-          },
-        },
-        loaded: {},
-        failed: {},
-      },
-    },
+    selected: {}, // no invocations needed
   },
   on: {
     // top level transition event (global?)
@@ -68,38 +33,43 @@ export const redditMachine = createMachine<Context, Event>({
   },
 });
 
-// sample SELECT event
-const selectEvent: Event = {
-  type: EventType.SELECT, // event type
-  name: "reactjs", // subreddit name
-};
-
 const Reddit = () => {
-  const subreddits = ["mechanicalkeyboards", "frontend", "reactjs", "vuejs"];
+  const subreddits = [
+    "mechanicalkeyboards",
+    "frontend",
+    "reactjs",
+    "vuejs",
+    "eli5_programming",
+    "XState",
+  ];
   const [state, send] = useMachine(redditMachine);
-  const { subreddit, posts } = state.context as Context;
+  const { subreddit } = state.context as Context;
 
-  const handleTab = (e: KeyboardEvent, machineState: typeof state) => {
-    const currentSubreddit = machineState.context.subreddit;
+  const subredditRef = useRef(state.context.subreddit);
+  useEffect(() => {
+    subredditRef.current = state.context.subreddit;
+  }, [state]);
+
+  const handleTab = (e: KeyboardEvent) => {
+    const currentSubreddit = subredditRef.current;
     if (e.code === "Comma") {
       const prevIndex = subreddits.findIndex((v) => v === currentSubreddit) - 1;
-      console.log("prev index", prevIndex);
       const prevSubreddit =
         subreddits[prevIndex] || subreddits[subreddits.length - 1];
-      send("SELECT", { name: prevSubreddit });
+      return send("SELECT", { name: prevSubreddit });
     }
     if (e.code === "Period") {
       const nextIndex = subreddits.findIndex((v) => v === currentSubreddit) + 1;
       const nextSubreddit = subreddits[nextIndex] || subreddits[0];
-      send("SELECT", { name: nextSubreddit });
+      return send("SELECT", { name: nextSubreddit });
     }
   };
   useEffect(() => {
-    window.addEventListener("keypress", (e) => handleTab(e, state));
+    window.addEventListener("keypress", handleTab);
     return () => {
-      window.removeEventListener("keypress", (e) => handleTab(e, state));
+      window.removeEventListener("keypress", handleTab);
     };
-  }, [state]);
+  }, []);
 
   return (
     <main className="flex flex-col items-start justify-start h-screen">
@@ -123,7 +93,7 @@ const Reddit = () => {
           })}
         </select>
 
-        <div>
+        <div className="flex gap-1">
           <button
             className="px-3 font-extrabold"
             onClick={() => handleTab({ code: "Comma" } as KeyboardEvent, state)}
@@ -141,58 +111,26 @@ const Reddit = () => {
         </div>
       </header>
 
-      <section className="overflow-auto px-6 w-full h-full">
-        <h1 className="font-bold text-xl uppercase text-orange-500 mb-3">
-          {state.matches("idle") ? "Select a subreddit" : subreddit}
-        </h1>
-        {state.matches({ selected: "loading" }) && (
-          <div
-            style={{ height: "80vh" }}
-            className="w-full h-full flex flex-col items-center justify-center gap-6 overflow-hidden"
-          >
-            <div className="h-6 w-6 rounded-md bg-gray-900 animate-spin"></div>
-            <h1 className="animate-pulse">Loading...</h1>
-          </div>
-        )}
-        {state.matches({ selected: "loaded" }) && (
-          <ul className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-1 gap-3">
-            {posts.map((post: any) => {
-              const previewImage = {
-                url: post.thumbnail,
-                height: post.thumbnail_height,
-                width: post.thumbnail_width,
-              };
-
+      {!subreddit && (
+        <div className="h-full w-full flex flex-col items-center justify-center text-stone-600">
+          <p className="mb-4">Select a subreddit</p>
+          <ul className="flex flex-col gap-1">
+            {subreddits.map((sr) => {
               return (
-                <li key={post.title}>
-                  <a
-                    href={"https://www.reddit.com" + post.permalink}
-                    target="__blank"
-                  >
-                    <div className="h-full border rounded-md p-3 bg-gray-50 hover:bg-orange-100">
-                      <h2 title={post.title} className="font-bold truncate">
-                        {post.title}
-                      </h2>
-
-                      <p className="line-clamp-3 text-xs">{post.selftext}</p>
-                      {post.thumbnail.includes("http") && (
-                        <div className="w-full flex items-center justify-center pt-2">
-                          <Image
-                            src={previewImage.url}
-                            height={previewImage.height}
-                            width={previewImage.width}
-                            alt={post.title}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </a>
-                </li>
+                <button
+                  className="px-3"
+                  key={sr}
+                  onClick={() => send("SELECT", { name: sr })}
+                >
+                  {sr}
+                </button>
               );
             })}
           </ul>
-        )}
-      </section>
+        </div>
+      )}
+
+      {subreddit && <Subreddit name={subreddit} key={subreddit} />}
     </main>
   );
 };
