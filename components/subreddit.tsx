@@ -4,7 +4,7 @@ import { ActorRef, ActorRefFrom, assign, createMachine } from "xstate";
 import { Context, Event } from "./subreddit.types";
 import Image from "next/image";
 
-const invokeFetchSubreddit = (context: Context) => {
+const invokeFetchSubreddit = (context: Context): Promise<any> => {
   const { subreddit } = context;
 
   return fetch(`https://www.reddit.com/r/${subreddit}.json`)
@@ -25,6 +25,7 @@ export const createSubredditMachine = (subreddit: string) => {
     },
     states: {
       loading: {
+        // @ts-ignore
         invoke: {
           id: "fetch-subreddit",
           src: invokeFetchSubreddit,
