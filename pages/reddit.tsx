@@ -128,15 +128,13 @@ const Reddit = () => {
         <div className="flex gap-1">
           <button
             className="px-3 font-extrabold"
-            onClick={() => handleTab({ code: "Comma" } as KeyboardEvent, state)}
+            onClick={() => handleTab({ code: "Comma" } as KeyboardEvent)}
           >
             {"<"}
           </button>
           <button
             className="px-3 font-extrabold"
-            onClick={() =>
-              handleTab({ code: "Period" } as KeyboardEvent, state)
-            }
+            onClick={() => handleTab({ code: "Period" } as KeyboardEvent)}
           >
             {">"}
           </button>
