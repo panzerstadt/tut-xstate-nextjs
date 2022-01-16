@@ -79,13 +79,31 @@ const Reddit = () => {
   const [state, send] = useMachine(redditMachine);
   const { subreddit, posts } = state.context as Context;
 
+  const handleTab = (e: KeyboardEvent, machineState: typeof state) => {
+    const currentSubreddit = machineState.context.subreddit;
+    if (e.code === "Comma") {
+      const prevIndex = subreddits.findIndex((v) => v === currentSubreddit) - 1;
+      console.log("prev index", prevIndex);
+      const prevSubreddit =
+        subreddits[prevIndex] || subreddits[subreddits.length - 1];
+      send("SELECT", { name: prevSubreddit });
+    }
+    if (e.code === "Period") {
+      const nextIndex = subreddits.findIndex((v) => v === currentSubreddit) + 1;
+      const nextSubreddit = subreddits[nextIndex] || subreddits[0];
+      send("SELECT", { name: nextSubreddit });
+    }
+  };
   useEffect(() => {
-    send("SELECT", { name: "MechanicalKeyboards" });
-  }, []);
+    window.addEventListener("keypress", (e) => handleTab(e, state));
+    return () => {
+      window.removeEventListener("keypress", (e) => handleTab(e, state));
+    };
+  }, [state]);
 
   return (
-    <main className="flex flex-col items-center justify-center h-screen">
-      <header>
+    <main className="flex flex-col items-start justify-start h-screen">
+      <header className="py-3 px-5 w-full flex justify-between">
         <select
           className="border px-2 py-1 rounded-md"
           onChange={(e) => {
@@ -94,28 +112,51 @@ const Reddit = () => {
         >
           <option value="">--Select a subreddit--</option>
           {subreddits.map((subreddit) => {
-            return <option key={subreddit}>{subreddit}</option>;
+            return (
+              <option
+                key={subreddit}
+                selected={state.context.subreddit === subreddit}
+              >
+                {subreddit}
+              </option>
+            );
           })}
         </select>
+
+        <div>
+          <button
+            className="px-3 font-extrabold"
+            onClick={() => handleTab({ code: "Comma" } as KeyboardEvent, state)}
+          >
+            {"<"}
+          </button>
+          <button
+            className="px-3 font-extrabold"
+            onClick={() =>
+              handleTab({ code: "Period" } as KeyboardEvent, state)
+            }
+          >
+            {">"}
+          </button>
+        </div>
       </header>
 
-      <section className="overflow-auto px-6 w-full">
+      <section className="overflow-auto px-6 w-full h-full">
         <h1 className="font-bold text-xl uppercase text-orange-500 mb-3">
           {state.matches("idle") ? "Select a subreddit" : subreddit}
         </h1>
         {state.matches({ selected: "loading" }) && (
           <div
             style={{ height: "80vh" }}
-            className="w-full flex flex-col items-center justify-center gap-6"
+            className="w-full h-full flex flex-col items-center justify-center gap-6 overflow-hidden"
           >
             <div className="h-6 w-6 rounded-md bg-gray-900 animate-spin"></div>
             <h1 className="animate-pulse">Loading...</h1>
           </div>
         )}
         {state.matches({ selected: "loaded" }) && (
-          <ul className="grid lg:grid-cols-5 grid-cols-3 gap-3">
+          <ul className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-1 gap-3">
             {posts.map((post: any) => {
-              console.log("post", post);
               const previewImage = {
                 url: post.thumbnail,
                 height: post.thumbnail_height,
@@ -135,12 +176,14 @@ const Reddit = () => {
 
                       <p className="line-clamp-3 text-xs">{post.selftext}</p>
                       {post.thumbnail.includes("http") && (
-                        <Image
-                          src={previewImage.url}
-                          height={previewImage.height}
-                          width={previewImage.width}
-                          alt={post.title}
-                        />
+                        <div className="w-full flex items-center justify-center pt-2">
+                          <Image
+                            src={previewImage.url}
+                            height={previewImage.height}
+                            width={previewImage.width}
+                            alt={post.title}
+                          />
+                        </div>
                       )}
                     </div>
                   </a>
